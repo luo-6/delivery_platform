@@ -12,6 +12,17 @@ spring:
       password: root
   main:
     allow-bean-definition-overriding: true
+  redis:
+    host: localhost
+    port: 6379
+    database: 0 #操作的数据库
+#    password: root 密码
+    jedis:
+      pool:
+        max-active: 8 #最大连接数
+        max-wait: 1ms #阻塞最大等待时间
+        max-idle: 8 #最大空闲连接
+        min-idle: 0 #最小空闲连接
 mybatis-plus:
   configuration:
     #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，开启按照驼峰命名法映射
