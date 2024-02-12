@@ -69,17 +69,6 @@ public class orderController {
         if (beginTime != null && endTime != null){
             queryWrapper.between(Orders::getOrderTime,beginTime,endTime);
         }
-        List<Orders> records = ordersPage.getRecords();
-        List<Orders> list = records.stream().map((item) -> {
-            Orders orders = new Orders();
-            Long userId = orders.getUserId();
-            User user = userService.getById(userId);
-            if (user != null) {
-                orders.setUserName(user.getName());
-            }
-            return orders;
-        }).collect(Collectors.toList());
-        ordersPage.setRecords(list);
         Page<Orders> ordersPage1 = ordersService.page(ordersPage, queryWrapper);
         log.info("ordersPage1:{}",ordersPage1);
         return Result.success(ordersPage1);
