@@ -12,6 +12,9 @@ spring:
       password: root
   main:
     allow-bean-definition-overriding: true
+  cache:
+    redis:
+      time-to-live: 1800000 #设
   redis:
     host: localhost
     port: 6379

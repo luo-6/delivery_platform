@@ -59,6 +59,16 @@ public class orderController {
         Page<OrderDetail> detailPage = orderDetailService.page(orderDetailPage,orderDetailLambdaQueryWrapper);
         return Result.success(detailPage);
     }
+
+    /**
+     * 订单查询
+     * @param page
+     * @param pageSize
+     * @param number
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
     @GetMapping("/page")
     public Result<Page> page(int page, int pageSize,Long number, String beginTime,String endTime){
         log.info("number:{},begintme:{},endtime:{}",number,beginTime,endTime);
