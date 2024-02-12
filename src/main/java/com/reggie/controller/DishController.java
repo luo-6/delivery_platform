@@ -15,8 +15,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.expression.Sets;
 
+import java.security.Key;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -101,6 +104,11 @@ public class DishController {
     public Result<DishDto> update(@RequestBody DishDto dishDto){
         log.info("DishDto:{}",dishDto);
         dishService.updateWithFlavor(dishDto);
+        //清理所有缓存
+        //Set keys = redisTemplate.keys("dish_*");
+        //只是清理某个分类下面的keys缓存
+        String key = "dish_" + dishDto.getCategoryId() + "_1";
+        redisTemplate.delete(key);
         return Result.success(dishDto);
     }
     @PostMapping ("/status/{status}")
