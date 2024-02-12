@@ -13,15 +13,19 @@ import com.reggie.service.DishService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/dish")
 @Slf4j
 public class DishController {
+    @Autowired
+    private RedisTemplate redisTemplate;
     @Autowired
     private DishService dishService;
     @Autowired
@@ -131,6 +135,16 @@ public class DishController {
 //    }
     @GetMapping("/list")
     public Result<List<DishDto>> list(Dish dish){
+        List<DishDto> dishDtoList = null;
+        String key = "dish_" + dish.getCategoryId() + "_"+dish.getStatus();
+        //先从redis获取缓存数据
+        dishDtoList = (List<DishDto>) redisTemplate.opsForValue().get(key);
+        if (dishDtoList != null){
+            //如果存在，直接返回，无需返回数据库
+            return Result.success(dishDtoList);
+        }
+
+        //如果不存在就查询数据库转存redis
         //构造查询条件
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null,Dish::getCategoryId,dish.getCategoryId());
@@ -139,7 +153,7 @@ public class DishController {
         //添加排序条件
         queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
         List<Dish> list = dishService.list(queryWrapper);
-        List<DishDto> dishDtoList = list.stream().map((item)->{
+        dishDtoList = list.stream().map((item)->{
             DishDto dishDto = new DishDto();
             Long categoryId = item.getCategoryId();//分类id
             BeanUtils.copyProperties(item,dishDto);
@@ -157,6 +171,7 @@ public class DishController {
             dishDto.setFlavors(flavorList);
             return dishDto;
         }).collect(Collectors.toList());
+        redisTemplate.opsForValue().set(key,dishDtoList,60, TimeUnit.MINUTES);
         return Result.success(dishDtoList);
     }
 
